@@ -13,23 +13,29 @@ RUN apt-get update && apt-get install -y \
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Diretório do app
 WORKDIR /var/www/html
 
-# Copia tudo
+# Copia os arquivos
 COPY . .
 
-# Permissões (senão o Laravel chora)
+# Garante .env (senão o Laravel morre)
+RUN cp .env.example .env || true
+
+# APP_KEY fake só pro build não quebrar
+ENV APP_KEY=base64:67f46728fbb9abfc3fda26967cbe1aa2
+
+# Garante pastas críticas
+RUN mkdir -p storage/logs bootstrap/cache database
+
+# Permissões
 RUN chmod -R 777 storage bootstrap/cache database
 
-# Instala dependências PHP
+# Instala dependências PHP (AGORA FUNCIONA)
 RUN composer install --no-dev --optimize-autoloader
 
-# Frontend (Breeze usa isso)
+# Frontend (Breeze)
 RUN npm install && npm run build
 
-# Porta do Render
 EXPOSE 10000
 
-# Start da aplicação
 CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000

@@ -1,6 +1,5 @@
 FROM php:8.2-cli
 
-# Dependências do sistema
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -10,26 +9,23 @@ RUN apt-get update && apt-get install -y \
     npm \
     && docker-php-ext-install pdo pdo_sqlite zip
 
-# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copia tudo
 COPY . .
+
+# APP_KEY fake só pro build não quebrar
+ENV APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
 # Permissões
 RUN chmod -R 777 storage bootstrap/cache database public
 
-# PHP deps
+# PHP deps (AGORA NÃO QUEBRA)
 RUN composer install --no-dev --optimize-autoloader
 
-# FRONTEND (AQUI ESTÁ O PROBLEMA NORMALMENTE)
-RUN npm install
-RUN npm run build
-
-# Debug rápido (opcional, mas ajuda)
-RUN ls -la public && ls -la public/build || true
+# Frontend
+RUN npm install && npm run build
 
 EXPOSE 10000
 

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: laravel-breeze
+    env: docker
+    plan: free
+    autoDeploy: true
+    disk:
+      name: laravel-data
+      mountPath: /var/www/html/database
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite
+      - key: SESSION_DRIVER
+        value: file
